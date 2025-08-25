@@ -210,6 +210,25 @@ defmodule Ash.Test.NotifierTest do
 
       assert_receive {:notification, %Ash.Notifier.Notification{metadata: %{custom?: true}}}
     end
+
+    test "a custom notification without domain can be returned in a before or after action hook" do
+      Comment
+      |> Ash.Changeset.for_create(:create, %{})
+      |> Ash.Changeset.before_action(fn changeset ->
+        {changeset,
+         %{
+           notifications: [
+             %Ash.Notifier.Notification{
+               resource: changeset.resource,
+               metadata: %{custom?: true}
+             }
+           ]
+         }}
+      end)
+      |> Ash.create!()
+
+      assert_receive {:notification, %Ash.Notifier.Notification{metadata: %{custom?: true}}}
+    end
   end
 
   test "a nested notification is sent automatically" do
